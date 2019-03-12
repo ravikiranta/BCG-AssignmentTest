@@ -8,8 +8,16 @@ namespace Managers
     public class ModelsManager : MonoBehaviour
     {
         #region Variables
+        [SerializeField] private bool objectReadyToCreate;
         [SerializeField] private GameObject loadedAsset;
         [SerializeField] private List<GameObject> createdObjects;
+        #endregion
+
+        #region Properties
+        public bool ObjectReadyToCreate()
+        {
+            return objectReadyToCreate;
+        }
         #endregion
 
         #region Singleton
@@ -53,7 +61,7 @@ namespace Managers
             if (assetName != null)
             {
                 loadedAsset = Resources.Load(assetName, typeof(GameObject)) as GameObject;
-                
+                objectReadyToCreate = true;
             }
             else
                 Debug.Log("Asset name is null");
@@ -65,6 +73,7 @@ namespace Managers
         {
             GameObject createdObject = Instantiate(loadedAsset, position, rotation);
             createdObjects.Add(createdObject);
+            objectReadyToCreate = false;
             return createdObject;
         }
         #endregion

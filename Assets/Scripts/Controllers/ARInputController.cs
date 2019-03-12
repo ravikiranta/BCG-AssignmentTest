@@ -32,7 +32,6 @@ namespace Controllers
         [Header("Info")]
         [SerializeField] private GameObject createdObject;
 
-
         /// <summary>
         /// The rotation in degrees need to apply to model when the Andy model is placed.
         /// </summary>
@@ -52,47 +51,66 @@ namespace Controllers
 
             // If the player has not touched the screen, we are done with this update.
             Touch touch;
-            if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
+            if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began || Input.touchCount > 1)
             {
                 return;
             }
+            //Check if Unity gameobject is in the way
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit rayHit;
 
-            // Raycast against the location the player touched to search for planes.
-            TrackableHit hit;
-            TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |
-                TrackableHitFlags.FeaturePointWithSurfaceNormal;
-
-            if (Frame.Raycast(touch.position.x, touch.position.y, raycastFilter, out hit))
+            if (Physics.Raycast(ray, out rayHit, 100))
             {
-                // Use hit pose and camera pose to check if hittest is from the
-                // back of the plane, if it is, no need to create the anchor.
-                if ((hit.Trackable is DetectedPlane) &&
-                    Vector3.Dot(FirstPersonCamera.transform.position - hit.Pose.position,
-                        hit.Pose.rotation * Vector3.up) < 0)
+                //Object selection
+            }
+            else
+            {   
+                // Raycast against the location the player touched to search for planes.
+                TrackableHit hit;
+                TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |
+                    TrackableHitFlags.FeaturePointWithSurfaceNormal;
+
+                if (Frame.Raycast(touch.position.x, touch.position.y, raycastFilter, out hit))
                 {
-                    Debug.Log("Hit at back of the current DetectedPlane");
+                    // Use hit pose and camera pose to check if hittest is from the
+                    // back of the plane, if it is, no need to create the anchor.
+
+                    if ((hit.Trackable is DetectedPlane) &&
+                        Vector3.Dot(FirstPersonCamera.transform.position - hit.Pose.position,
+                            hit.Pose.rotation * Vector3.up) < 0) { 
+                        Debug.Log("Hit at back of the current DetectedPlane");
+                    }
+                    else
+                    {
+                        // If an object is not selected, create new object
+                        if (!ModelInteractionManager.Instance.IsObjectSelected)
+                        {
+                            createdObject = ModelsManager.Instance.CreateLoadedAsset(hit.Pose.position, hit.Pose.rotation);
+                            createdObject.GetComponent<ObjectController>().SetSelection();
+
+                            // Compensate for the hitPose rotation facing away from the raycast (i.e. camera).
+                            //createdObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
+                            ModelInteractionManager.Instance.RotateSelectedObject(new Vector3(0, k_ModelRotation, 0));
+
+                            // Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
+                            // world evolves.
+                            var anchor = hit.Trackable.CreateAnchor(hit.Pose);
+
+                            // Make Andy model a child of the anchor.
+                            createdObject.transform.parent = anchor.transform;
+                        }
+                        //If object is selected, move it to new position
+                        else
+                        {
+                            ModelInteractionManager.Instance.MoveSelectedObject(hit.Pose.position);
+                        }
+
+                        
+                    }
                 }
                 else
                 {
-                    // Choose the Andy model for the Trackable that got hit.
-                    GameObject prefab = null;
-                    //if (hit.Trackable is FeaturePoint)
-                    //{
-                        createdObject = ModelsManager.Instance.CreateLoadedAsset(hit.Pose.position, hit.Pose.rotation);
-                    //}
 
-                    // Instantiate Andy model at the hit pose.
-                    //var createdObject = Instantiate(prefab, hit.Pose.position, hit.Pose.rotation);
-
-                    // Compensate for the hitPose rotation facing away from the raycast (i.e. camera).
-                    createdObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
-
-                    // Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
-                    // world evolves.
-                    var anchor = hit.Trackable.CreateAnchor(hit.Pose);
-
-                    // Make Andy model a child of the anchor.
-                    createdObject.transform.parent = anchor.transform;
                 }
             }
         }
