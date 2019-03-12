@@ -1,24 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="HelloARController.cs" company="Google">
-//
-// Copyright 2017 Google Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// </copyright>
-//-----------------------------------------------------------------------
-
-namespace Controllers
+﻿namespace Controllers
 {
     using System.Collections.Generic;
     using GoogleARCore;
@@ -40,22 +20,14 @@ namespace Controllers
         /// <summary>
         /// The first-person camera being used to render the passthrough camera image (i.e. AR background).
         /// </summary>
-        public Camera FirstPersonCamera;
+        [SerializeField] private Camera FirstPersonCamera;
 
         /// <summary>
         /// A prefab for tracking and visualizing detected planes.
         /// </summary>
-        public GameObject DetectedPlanePrefab;
+        [SerializeField] private GameObject DetectedPlanePrefab;
 
-        /// <summary>
-        /// A model to place when a raycast from a user touch hits a plane.
-        /// </summary>
-        public GameObject AndyPlanePrefab;
-
-        /// <summary>
-        /// A model to place when a raycast from a user touch hits a feature point.
-        /// </summary>
-        public GameObject AndyPointPrefab;
+        [SerializeField] private GameObject selectedAsset;
 
         /// <summary>
         /// The rotation in degrees need to apply to model when the Andy model is placed.
@@ -99,14 +71,10 @@ namespace Controllers
                 else
                 {
                     // Choose the Andy model for the Trackable that got hit.
-                    GameObject prefab;
+                    GameObject prefab = null;
                     if (hit.Trackable is FeaturePoint)
                     {
-                        prefab = AndyPointPrefab;
-                    }
-                    else
-                    {
-                        prefab = AndyPlanePrefab;
+                        
                     }
 
                     // Instantiate Andy model at the hit pose.
