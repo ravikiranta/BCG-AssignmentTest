@@ -49,22 +49,17 @@ namespace Controllers
         {
             _UpdateApplicationLifecycle();
 
-            // If the player has not touched the screen, we are done with this update.
+            // All interactions handled here only use single touch
             Touch touch;
             if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began || Input.touchCount > 1)
             {
                 return;
             }
-            //Check if Unity gameobject is in the way
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit rayHit;
 
-            if (Physics.Raycast(ray, out rayHit, 100))
+            #region OBJECT CREATION
+            // Create object is an item in UI is selected and only single touch count
+            if (ModelsManager.Instance.ObjectReadyToCreate)
             {
-                //Object selection
-            }
-            else
-            {   
                 // Raycast against the location the player touched to search for planes.
                 TrackableHit hit;
                 TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |
@@ -77,7 +72,8 @@ namespace Controllers
 
                     if ((hit.Trackable is DetectedPlane) &&
                         Vector3.Dot(FirstPersonCamera.transform.position - hit.Pose.position,
-                            hit.Pose.rotation * Vector3.up) < 0) { 
+                            hit.Pose.rotation * Vector3.up) < 0)
+                    {
                         Debug.Log("Hit at back of the current DetectedPlane");
                     }
                     else
@@ -86,7 +82,6 @@ namespace Controllers
                         if (!ModelInteractionManager.Instance.IsObjectSelected)
                         {
                             createdObject = ModelsManager.Instance.CreateLoadedAsset(hit.Pose.position, hit.Pose.rotation);
-                            createdObject.GetComponent<ObjectController>().SetSelection();
 
                             // Compensate for the hitPose rotation facing away from the raycast (i.e. camera).
                             //createdObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
@@ -99,20 +94,51 @@ namespace Controllers
                             // Make Andy model a child of the anchor.
                             createdObject.transform.parent = anchor.transform;
                         }
-                        //If object is selected, move it to new position
+                    }
+                }
+            }
+            #endregion
+
+            #region OBJECT MOVEMENT
+            // Move the object if no object is selected for creation but an object is selected and single touch count
+            else
+            {
+                //Check if Unity gameobject is in the way
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit rayHit;
+
+                if (Physics.Raycast(ray, out rayHit, 100))
+                {
+                    //Object selection will happen on the existing object
+                }
+
+                // If no  object in the way, and there is an object selected, then allow movement
+                else if(ModelInteractionManager.Instance.IsObjectSelected)
+                {
+                    // Raycast against the location the player touched to search for planes.
+                    TrackableHit hit;
+                    TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |
+                        TrackableHitFlags.FeaturePointWithSurfaceNormal;
+
+                    if (Frame.Raycast(touch.position.x, touch.position.y, raycastFilter, out hit))
+                    {
+                        // Use hit pose and camera pose to check if hittest is from the
+                        // back of the plane, if it is, no need to create the anchor.
+
+                        if ((hit.Trackable is DetectedPlane) &&
+                            Vector3.Dot(FirstPersonCamera.transform.position - hit.Pose.position,
+                                hit.Pose.rotation * Vector3.up) < 0)
+                        {
+                            Debug.Log("Hit at back of the current DetectedPlane");
+                        }
                         else
                         {
                             ModelInteractionManager.Instance.MoveSelectedObject(hit.Pose.position);
                         }
-
-                        
                     }
                 }
-                else
-                {
-
-                }
             }
+            #endregion
         }
 
         /// <summary>

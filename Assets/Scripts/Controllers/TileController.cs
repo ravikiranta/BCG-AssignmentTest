@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Managers;
 
 namespace Controllers
 {
@@ -44,6 +45,7 @@ namespace Controllers
         void Subscribe()
         {
             onNewAugmentedContentSelected += UpdateHighlightColour;
+            ModelsManager.onObjectCreated += DeselectAllTiles;
         }
         #endregion
 
@@ -51,6 +53,7 @@ namespace Controllers
         void OnDestroy()
         {
             onNewAugmentedContentSelected -= UpdateHighlightColour;
+            ModelsManager.onObjectCreated -= DeselectAllTiles;
         }
         #endregion
 
@@ -63,6 +66,11 @@ namespace Controllers
         #endregion
 
         #region HighlightFunctions
+        void DeselectAllTiles()
+        {
+            UpdateHighlightColour("null");
+        }
+
         void UpdateHighlightColour(string contentName)
         {
             if (this.contentName == contentName)

@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Utility;
 using Controllers;
+using UnityEngine.UI;
 
 namespace Managers
 {
@@ -16,6 +16,8 @@ namespace Managers
         [SerializeField] private float ySpeed = 120.0f;
         [SerializeField] private float yMinLimit = -20f;
         [SerializeField] private float yMaxLimit = 80f;
+        [SerializeField] private float scaleSpeed;
+        [SerializeField] private float touchDeltaToZoomThreshold;
 
         private float x = 0.0f;
         private float y = 0.0f;
@@ -89,32 +91,51 @@ namespace Managers
         }
         #endregion
 
-        #region Input
+        #region OBJECT ROTATION
+        //Rotate the object if object is selected and no item in menu selected for creation and tow touch counts
         void LateUpdate()
         {
             if (isObjectSelected)
             {
-#if (UNITY_ANDROID || UNITY_IOS)
-                //TouchDetection.Calculate();
-#endif
-                //--- Rotation ---
-#if (UNITY_ANDROID || UNITY_IOS)
-                if (Input.touchCount == 2)
-#elif(UNITY_EDITOR)
-                if (Input.GetMouseButton(1))
-#endif
+                //--- Scale ---
+                // Store both touches.
+                Touch touchZero = Input.GetTouch(0);
+                Touch touchOne = Input.GetTouch(1);
+
+                // Find the position in the previous frame of each touch.
+                Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+                Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+
+                // Find the magnitude of the vector (the distance) between the touches in each frame.
+                float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+                float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+
+                // Find the difference in the distances between each frame.
+                //float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+                float deltaMagnitudeDiff = touchDeltaMag - prevTouchDeltaMag;
+
+                //Calculate fov changes
+                if (deltaMagnitudeDiff > touchDeltaToZoomThreshold || deltaMagnitudeDiff < -touchDeltaToZoomThreshold)
                 {
-#if (UNITY_ANDROID || UNITY_IOS)
-                    x += Input.GetTouch(0).deltaPosition.x * xSpeed * 0.01f;
-                    y -= Input.GetTouch(0).deltaPosition.y * ySpeed * 0.01f;
-#elif (UNITY_EDITOR)
-                    x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
-                    y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
-#endif
-                    y = ClampAngle(y, yMinLimit, yMaxLimit);
-                    rotation = Quaternion.Euler(
-                        selectedGameObject.transform.rotation.eulerAngles.x, x, selectedGameObject.transform.rotation.z);
-                    selectedGameObject.transform.rotation = rotation;
+                    selectedGameObject.transform.localScale = new Vector3(
+                        selectedGameObject.transform.localScale.x + deltaMagnitudeDiff * scaleSpeed,
+                        selectedGameObject.transform.localScale.y + deltaMagnitudeDiff * scaleSpeed,
+                        selectedGameObject.transform.localScale.z + deltaMagnitudeDiff * scaleSpeed);
+                }
+                else {
+                    //--- Rotation ---
+                    if (Input.touchCount == 2)
+                    {
+                        x += Input.GetTouch(0).deltaPosition.x * xSpeed * 0.01f;
+                        y -= Input.GetTouch(0).deltaPosition.y * ySpeed * 0.01f;
+                        y = ClampAngle(y, yMinLimit, yMaxLimit);
+
+                        rotation = Quaternion.Euler(
+                            selectedGameObject.transform.rotation.eulerAngles.x,
+                            x, selectedGameObject.transform.rotation.z);
+
+                        selectedGameObject.transform.rotation = rotation;
+                    }
                 }
             }
         }

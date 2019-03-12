@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Managers;
 
 public class ObjectController : MonoBehaviour
 {
@@ -31,11 +32,9 @@ public class ObjectController : MonoBehaviour
     public void Init()
     {
         selected = false;
+
         //---- Subscribe to events ----
         Subscribe();
-
-        //---- Set Selected ---
-        SetSelection();
     }
 
     void Subscribe()
@@ -57,12 +56,15 @@ public class ObjectController : MonoBehaviour
         if (selectedObject != gameObject)
         {
             selected = false;
+            ChangeMaterial(false);
         }
     }
 
     private void OnMouseDown()
     {
-        SetSelection();
+        // If there is an object selected for creation do not allow selection
+        if(!ModelsManager.Instance.ObjectReadyToCreate)
+            ToggleSelection();
     }
 
     public void DeSelect()
@@ -72,7 +74,7 @@ public class ObjectController : MonoBehaviour
             onObjectSelected(null);
     }
 
-    public void SetSelection()
+    public void ToggleSelection()
     {
         if (!selected)
         {

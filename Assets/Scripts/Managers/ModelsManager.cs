@@ -14,10 +14,18 @@ namespace Managers
         #endregion
 
         #region Properties
-        public bool ObjectReadyToCreate()
+        public bool ObjectReadyToCreate
         {
-            return objectReadyToCreate;
+            get
+            {
+                return objectReadyToCreate;
+            }
         }
+        #endregion
+
+        #region Events
+        public delegate void ModelsManagerEvent();
+        public static event ModelsManagerEvent onObjectCreated;
         #endregion
 
         #region Singleton
@@ -74,6 +82,10 @@ namespace Managers
             GameObject createdObject = Instantiate(loadedAsset, position, rotation);
             createdObjects.Add(createdObject);
             objectReadyToCreate = false;
+
+            if (onObjectCreated != null)
+                onObjectCreated();
+
             return createdObject;
         }
         #endregion
