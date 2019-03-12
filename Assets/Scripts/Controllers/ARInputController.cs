@@ -1,11 +1,12 @@
-﻿namespace Controllers
+﻿using System.Collections.Generic;
+using GoogleARCore;
+using GoogleARCore.Examples.Common;
+using GoogleARCore.Examples.HelloAR;
+using UnityEngine;
+using Managers;
+
+namespace Controllers
 {
-    using System.Collections.Generic;
-    using GoogleARCore;
-    using GoogleARCore.Examples.Common;
-    using GoogleARCore.Examples.HelloAR;
-    using UnityEngine;
-    
 
 #if UNITY_EDITOR
     // Set up touch input propagation while using Instant Preview in the editor.
@@ -17,6 +18,7 @@
     /// </summary>
     public class ARInputController : MonoBehaviour
     {
+        [Header ("References")]
         /// <summary>
         /// The first-person camera being used to render the passthrough camera image (i.e. AR background).
         /// </summary>
@@ -27,7 +29,9 @@
         /// </summary>
         [SerializeField] private GameObject DetectedPlanePrefab;
 
-        [SerializeField] private GameObject selectedAsset;
+        [Header("Info")]
+        [SerializeField] private GameObject createdObject;
+
 
         /// <summary>
         /// The rotation in degrees need to apply to model when the Andy model is placed.
@@ -72,23 +76,23 @@
                 {
                     // Choose the Andy model for the Trackable that got hit.
                     GameObject prefab = null;
-                    if (hit.Trackable is FeaturePoint)
-                    {
-                        
-                    }
+                    //if (hit.Trackable is FeaturePoint)
+                    //{
+                        createdObject = ModelsManager.Instance.CreateLoadedAsset(hit.Pose.position, hit.Pose.rotation);
+                    //}
 
                     // Instantiate Andy model at the hit pose.
-                    var andyObject = Instantiate(prefab, hit.Pose.position, hit.Pose.rotation);
+                    //var createdObject = Instantiate(prefab, hit.Pose.position, hit.Pose.rotation);
 
                     // Compensate for the hitPose rotation facing away from the raycast (i.e. camera).
-                    andyObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
+                    createdObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
 
                     // Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
                     // world evolves.
                     var anchor = hit.Trackable.CreateAnchor(hit.Pose);
 
                     // Make Andy model a child of the anchor.
-                    andyObject.transform.parent = anchor.transform;
+                    createdObject.transform.parent = anchor.transform;
                 }
             }
         }

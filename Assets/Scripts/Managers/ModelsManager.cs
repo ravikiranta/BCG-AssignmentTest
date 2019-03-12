@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Controllers;
 
-namespace managers
+namespace Managers
 {
     public class ModelsManager : MonoBehaviour
     {
@@ -53,7 +53,7 @@ namespace managers
             if (assetName != null)
             {
                 loadedAsset = Resources.Load(assetName, typeof(GameObject)) as GameObject;
-                CreateLoadedAsset(new Vector3(0f, 0f, 8f), Quaternion.identity);
+                
             }
             else
                 Debug.Log("Asset name is null");
@@ -61,9 +61,11 @@ namespace managers
         #endregion
 
         #region CreateModelFunctions
-        void CreateLoadedAsset(Vector3 position, Quaternion rotation)
+        public GameObject CreateLoadedAsset(Vector3 position, Quaternion rotation)
         {
-            createdObjects.Add(Instantiate(loadedAsset, position, rotation));
+            GameObject createdObject = Instantiate(loadedAsset, position, rotation);
+            createdObjects.Add(createdObject);
+            return createdObject;
         }
         #endregion
     }
