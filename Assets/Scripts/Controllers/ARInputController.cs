@@ -18,22 +18,24 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.HelloAR
+namespace Controllers
 {
     using System.Collections.Generic;
     using GoogleARCore;
     using GoogleARCore.Examples.Common;
+    using GoogleARCore.Examples.HelloAR;
     using UnityEngine;
+    
 
 #if UNITY_EDITOR
     // Set up touch input propagation while using Instant Preview in the editor.
-    using Input = InstantPreviewInput;
+    //using Input = InstantPreviewInput;
 #endif
 
     /// <summary>
     /// Controls the HelloAR example.
     /// </summary>
-    public class HelloARController : MonoBehaviour
+    public class ARInputController : MonoBehaviour
     {
         /// <summary>
         /// The first-person camera being used to render the passthrough camera image (i.e. AR background).
