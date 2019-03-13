@@ -84,50 +84,43 @@ namespace Managers
         {
             selectedGameObject.transform.position = position;
         }
-
-        public void RotateSelectedObject(Vector3 rotation)
-        {
-
-        }
         #endregion
 
         #region OBJECT ROTATION
         //Rotate the object if object is selected and no item in menu selected for creation and tow touch counts
         void LateUpdate()
         {
-            if (isObjectSelected)
-            {
-                //--- Scale ---
+            if (Input.touchCount == 2) {
                 // Store both touches.
                 Touch touchZero = Input.GetTouch(0);
                 Touch touchOne = Input.GetTouch(1);
 
-                // Find the position in the previous frame of each touch.
-                Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
-                Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+                if (isObjectSelected) {
+                    //--- Scale ---
+                    // Find the position in the previous frame of each touch.
+                    Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+                    Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
 
-                // Find the magnitude of the vector (the distance) between the touches in each frame.
-                float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
-                float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+                    // Find the magnitude of the vector (the distance) between the touches in each frame.
+                    float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+                    float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
 
-                // Find the difference in the distances between each frame.
-                //float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
-                float deltaMagnitudeDiff = touchDeltaMag - prevTouchDeltaMag;
+                    // Find the difference in the distances between each frame.
+                    float deltaMagnitudeDiff = touchDeltaMag - prevTouchDeltaMag;
 
-                //Calculate fov changes
-                if (deltaMagnitudeDiff > touchDeltaToZoomThreshold || deltaMagnitudeDiff < -touchDeltaToZoomThreshold)
-                {
-                    selectedGameObject.transform.localScale = new Vector3(
-                        selectedGameObject.transform.localScale.x + deltaMagnitudeDiff * scaleSpeed,
-                        selectedGameObject.transform.localScale.y + deltaMagnitudeDiff * scaleSpeed,
-                        selectedGameObject.transform.localScale.z + deltaMagnitudeDiff * scaleSpeed);
-                }
-                else {
-                    //--- Rotation ---
-                    if (Input.touchCount == 2)
+                    //Calculate fov changes
+                    if (deltaMagnitudeDiff > touchDeltaToZoomThreshold || deltaMagnitudeDiff < -touchDeltaToZoomThreshold)
                     {
-                        x += Input.GetTouch(0).deltaPosition.x * xSpeed * 0.01f;
-                        y -= Input.GetTouch(0).deltaPosition.y * ySpeed * 0.01f;
+                        selectedGameObject.transform.localScale = new Vector3(
+                            selectedGameObject.transform.localScale.x + deltaMagnitudeDiff * scaleSpeed,
+                            selectedGameObject.transform.localScale.y + deltaMagnitudeDiff * scaleSpeed,
+                            selectedGameObject.transform.localScale.z + deltaMagnitudeDiff * scaleSpeed);
+                    }
+                    else
+                    {
+                        //--- Rotation ---
+                        x += touchZero.deltaPosition.x * xSpeed * 0.01f;
+                        y -= touchZero.deltaPosition.y * ySpeed * 0.01f;
                         y = ClampAngle(y, yMinLimit, yMaxLimit);
 
                         rotation = Quaternion.Euler(

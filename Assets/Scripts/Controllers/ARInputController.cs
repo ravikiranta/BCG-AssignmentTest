@@ -4,6 +4,7 @@ using GoogleARCore.Examples.Common;
 using GoogleARCore.Examples.HelloAR;
 using UnityEngine;
 using Managers;
+using UnityEngine.EventSystems;
 
 namespace Controllers
 {
@@ -50,8 +51,10 @@ namespace Controllers
             _UpdateApplicationLifecycle();
 
             // All interactions handled here only use single touch
+            // Also check if mouse is over UI
             Touch touch;
-            if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began || Input.touchCount > 1)
+            if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began 
+                || Input.touchCount > 1 || EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
@@ -84,8 +87,7 @@ namespace Controllers
                             createdObject = ModelsManager.Instance.CreateLoadedAsset(hit.Pose.position, hit.Pose.rotation);
 
                             // Compensate for the hitPose rotation facing away from the raycast (i.e. camera).
-                            //createdObject.transform.Rotate(0, k_ModelRotation, 0, Space.Self);
-                            ModelInteractionManager.Instance.RotateSelectedObject(new Vector3(0, k_ModelRotation, 0));
+                            //ModelInteractionManager.Instance.RotateSelectedObject(new Vector3(0, k_ModelRotation, 0));
 
                             // Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
                             // world evolves.

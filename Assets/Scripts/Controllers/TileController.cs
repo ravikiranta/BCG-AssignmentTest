@@ -24,6 +24,7 @@ namespace Controllers
         #region Events
         public delegate void AugmentedContentSelection(string contentName);
         public static event AugmentedContentSelection onNewAugmentedContentSelected;
+
         #endregion
 
         #region Properties
